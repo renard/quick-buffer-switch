@@ -5,7 +5,7 @@
 ;; Author: Sebastien Gross <seb•ɑƬ•chezwam•ɖɵʈ•org>
 ;; Keywords: emacs, configuration
 ;; Created: 2010-07-06
-;; Last changed: 2011-07-07 12:53:14
+;; Last changed: 2011-07-18 16:28:21
 ;; Licence: WTFPL, grab your copy here: http://sam.zoy.org/wtfpl/
 
 ;; This file is NOT part of GNU Emacs.
@@ -16,6 +16,7 @@
 ;;
 ;; To install:
 ;;   (require 'quick-buffer-switch)
+;;   (qbs-init)
 ;;
 ;; Then following bindings are available:
 ;;   C-x C-c C-c    `qbs-files-or-directories'
@@ -32,12 +33,14 @@
 (defvar quick-buffer-switch-map nil
   "Keymap for quick-buffer-switch commands.")
 
-(define-prefix-command 'quick-buffer-switch-map)
-(global-set-key (kbd "C-x C-c") 'quick-buffer-switch-map)
-(define-key quick-buffer-switch-map (kbd "C-c") 'qbs-files-or-directories)
-(define-key quick-buffer-switch-map (kbd "C-d") 'qbs-directories)
-(define-key quick-buffer-switch-map (kbd "C-f") 'qbs-files)
-
+;;;###autoload
+(defun qbs-init ()
+  "Initialize quick-buffer-switch."
+  (define-prefix-command 'quick-buffer-switch-map)
+  (global-set-key (kbd "C-x C-c") 'quick-buffer-switch-map)
+  (define-key quick-buffer-switch-map (kbd "C-c") 'qbs-files-or-directories)
+  (define-key quick-buffer-switch-map (kbd "C-d") 'qbs-directories)
+  (define-key quick-buffer-switch-map (kbd "C-f") 'qbs-files))
 
 (defvar qbs-files-or-directories-history '()
   "History list for files or directories switch.")
