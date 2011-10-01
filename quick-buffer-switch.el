@@ -5,7 +5,7 @@
 ;; Author: Sebastien Gross <seb•ɑƬ•chezwam•ɖɵʈ•org>
 ;; Keywords: emacs, configuration
 ;; Created: 2010-07-06
-;; Last changed: 2011-07-18 16:28:21
+;; Last changed: 2011-10-01 12:05:18
 ;; Licence: WTFPL, grab your copy here: http://sam.zoy.org/wtfpl/
 
 ;; This file is NOT part of GNU Emacs.
@@ -51,6 +51,9 @@
 (defvar qbs-files-history '()
   "History list for files switch.")
 
+(defvar qbs-timeout 0.2
+  "Timeout to when checking a path as directory.")
+
 (defconst qbs-dispatcher
   '((f-o-d . ("" qbs-get-visited-files-or-directories-list qbs-files-or-directories-history))
     (d . (" (dir)" qbs-get-visited-directories-list  qbs-directories-history))
@@ -74,13 +77,17 @@
 (defun qbs-get-visited-directories-list()
   "Return a list of all directories visited by a buffer."
   (loop for buffer in (qbs-get-visited-files-or-directories-list)
-	when (file-directory-p buffer)
+	when (with-timeout (qbs-timeout
+			    (message (format "Timeout for %s" buffer)))
+	       (file-directory-p buffer))
 	collect buffer))
 
 (defun qbs-get-visited-files-list()
   "Return a list of all files visited by a buffer."
   (loop for buffer in (qbs-get-visited-files-or-directories-list)
-	unless (file-directory-p buffer)
+	unless (with-timeout (qbs-timeout
+			      (message (format "Timeout for %s" buffer)))
+		 (file-directory-p buffer))
 	collect buffer))
 
 (defun quick-buffer-switch (type &optional filename)
