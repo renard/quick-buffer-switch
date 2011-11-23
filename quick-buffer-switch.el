@@ -16,6 +16,8 @@
 ;;
 ;; To install:
 ;;   (require 'quick-buffer-switch)
+;;   ;; To preserve C-x C-x uncomment next line
+;;   ;; (setq qbs-prefix-key "C-x C-a")
 ;;   (qbs-init)
 ;;
 ;; Note that C-x C-c (`save-buffers-kill-terminal') is shadowed.
@@ -30,6 +32,11 @@
 
 (defvar qbs-timeout 0.2
   "Timeout to when checking a path as directory.")
+
+(defvar qbs-prefix-key "C-x C-c"
+  "Prefix key used for `quick-buffer-switch-map'.
+
+Note: By default it shadows `save-buffers-kill-terminal'.")
 
 (defvar
   qbs-predicates-alist
@@ -103,7 +110,7 @@
 - A string definition used as prompt.
 - A 1-parameter predicate function
 - An optional key binding used within `quick-buffer-switch-map'
-  which prefix is C-x C-x.
+  which prefix is C-x C-c.
 
 Note that C-x C-c (`save-buffers-kill-terminal') is then shadowed.
 
@@ -115,7 +122,8 @@ to `switch-to-buffer' or a path suitable to `find-file'.")
 (defun qbs-init ()
   "Initialize quick-buffer-switch."
   (define-prefix-command 'quick-buffer-switch-map)
-  (global-set-key (kbd "C-x C-c") 'quick-buffer-switch-map)
+  (global-set-key (read-kbd-macro qbs-prefix-key) 'quick-buffer-switch-map)
+  (define-key quick-buffer-switch-map (kbd "?") 'quick-buffer-switch)
   (dolist (type  (mapcar 'car qbs-predicates-alist))
     (let* ((predicate-def (assoc type qbs-predicates-alist))
 	   (key (cadddr predicate-def))
