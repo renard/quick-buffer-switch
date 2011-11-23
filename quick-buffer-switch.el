@@ -5,7 +5,7 @@
 ;; Author: Sebastien Gross <seb•ɑƬ•chezwam•ɖɵʈ•org>
 ;; Keywords: emacs, configuration
 ;; Created: 2010-07-06
-;; Last changed: 2011-11-23 15:12:15
+;; Last changed: 2011-11-23 23:25:07
 ;; Licence: WTFPL, grab your copy here: http://sam.zoy.org/wtfpl/
 
 ;; This file is NOT part of GNU Emacs.
@@ -80,6 +80,16 @@ Note: By default it shadows `save-buffers-kill-terminal'.")
 			(not (get-buffer-process b)))
 		   (buffer-name b)))
 	       "C-e")
+     (magit-mode "Magit buffers"
+	       (lambda (b)
+		 (when (eq major-mode 'magit-mode)
+		   (buffer-name b)))
+	       "C-g")
+     (emacs-lisp-mode "Emacs Lisp buffers"
+	       (lambda (b)
+		 (when (eq major-mode 'emacs-lisp-mode)
+		   (buffer-name b)))
+	       "C-l")
      (help "help buffer"
 	   (lambda (b)
 		 (when (or
@@ -102,6 +112,21 @@ Note: By default it shadows `save-buffers-kill-terminal'.")
 		       (when (get-buffer-process b)
 			 bname)))
 		   "C-p")
+     (remote "remote buffer"
+	     (lambda (b)
+	       (let* ((bname (buffer-name b))
+		      (fname (or buffer-file-name
+				dired-directory))
+		      (file-vec (or (ignore-errors (tramp-dissect-file-name
+						    fname))
+				    (tramp-dissect-file-name
+				     (concat "/:" fname) 1)))
+		      (host  (tramp-file-name-host file-vec)))
+		 (message (format "Format %S" host))
+		 (when (and host
+			    (not (string= system-name host)))
+		   (abbreviate-file-name fname))))
+	     "C-r")
      )
   "List of `quick-buffer-switch' predicate. Each predicate consists of:
 
