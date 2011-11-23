@@ -5,7 +5,7 @@
 ;; Author: Sebastien Gross <seb•ɑƬ•chezwam•ɖɵʈ•org>
 ;; Keywords: emacs, configuration
 ;; Created: 2010-07-06
-;; Last changed: 2011-10-01 12:05:18
+;; Last changed: 2011-11-23 15:12:15
 ;; Licence: WTFPL, grab your copy here: http://sam.zoy.org/wtfpl/
 
 ;; This file is NOT part of GNU Emacs.
@@ -18,12 +18,7 @@
 ;;   (require 'quick-buffer-switch)
 ;;   (qbs-init)
 ;;
-;; Then following bindings are available:
-;;   C-x C-c C-c    `qbs-files-or-directories'
-;;   C-x C-c C-d    `qbs-files-directories'
-;;   C-x C-c C-f    `qbs-files'
-;;
-;; Note that C-x C-c (`save-buffers-kill-terminal') is then shadowed.
+;; Note that C-x C-c (`save-buffers-kill-terminal') is shadowed.
 
 
 (eval-when-compile (require 'cl))
@@ -31,97 +26,145 @@
 
 
 (defvar quick-buffer-switch-map nil
-  "Keymap for quick-buffer-switch commands.")
+`  "Keymap for quick-buffer-switch commands.")
+
+(defvar qbs-timeout 0.2
+  "Timeout to when checking a path as directory.")
+
+(defvar
+  qbs-predicates-alist
+  '((hidden-buffer "hidden buffer"
+		   (lambda (b)
+		     (let ((bname (buffer-name b)))
+		       (when (string-match "^ " bname)
+			 bname)))
+		   "C-h")
+    (directory "directory"
+	       (lambda (b)
+		 (when (eq major-mode 'dired-mode)
+		   (abbreviate-file-name default-directory)))
+	       "C-d")
+     (file "file"
+	   (lambda (b)
+	     (let ((fname (buffer-file-name)))
+	       (when fname
+		 (abbreviate-file-name fname))))
+	   "C-f")
+     (org-file "org file"
+	       (lambda (b)
+		 (let ((fname (buffer-file-name)))
+	       (when (and
+		      fname
+		      (eq major-mode 'org-mode))
+		 (abbreviate-file-name fname))))
+	       "C-o")
+     (file-or-directory "file or directory"
+			(lambda (b)
+			  (let ((fname (if (eq major-mode 'dired-mode)
+					   default-directory
+					 (buffer-file-name))))
+			    (when fname
+			      (abbreviate-file-name fname))))
+			"C-c")
+     (erc-chat "ERC chat"
+	       (lambda (b)
+		 (when (and
+			(eq major-mode 'erc-mode)
+			(not (get-buffer-process b)))
+		   (buffer-name b)))
+	       "C-e")
+     (help "help buffer"
+	   (lambda (b)
+		 (when (or
+			(eq major-mode 'help-mode)
+			(eq major-mode 'Info-mode))
+		   (buffer-name b)))
+	   "C-i")
+     (not-file-nor-directory "not file related buffer"
+			     (lambda (b)
+			       (let ((bname (buffer-name b)))
+				 (unless (or
+					  (eq major-mode 'dired-mode)
+					  (buffer-file-name)
+					  (string-match "^ " bname))
+				   bname)))
+			     "C-b")
+     (with-process "buffer with process"
+		   (lambda (b)
+		     (let* ((bname (buffer-name b)))
+		       (when (get-buffer-process b)
+			 bname)))
+		   "C-p")
+     )
+  "List of `quick-buffer-switch' predicate. Each predicate consists of:
+
+- A symbol used by `qbs-get-buffer-names' and to create a
+  qbs-SYMBOL function.
+- A string definition used as prompt.
+- A 1-parameter predicate function
+- An optional key binding used within `quick-buffer-switch-map'
+  which prefix is C-x C-x.
+
+Note that C-x C-c (`save-buffers-kill-terminal') is then shadowed.
+
+The predicate function should take a buffer object as parameter,
+and return a string which should be either a buffer name suitable
+to `switch-to-buffer' or a path suitable to `find-file'.")
 
 ;;;###autoload
 (defun qbs-init ()
   "Initialize quick-buffer-switch."
   (define-prefix-command 'quick-buffer-switch-map)
   (global-set-key (kbd "C-x C-c") 'quick-buffer-switch-map)
-  (define-key quick-buffer-switch-map (kbd "C-c") 'qbs-files-or-directories)
-  (define-key quick-buffer-switch-map (kbd "C-d") 'qbs-directories)
-  (define-key quick-buffer-switch-map (kbd "C-f") 'qbs-files))
+  (dolist (type  (mapcar 'car qbs-predicates-alist))
+    (let* ((predicate-def (assoc type qbs-predicates-alist))
+	   (key (cadddr predicate-def))
+	   (fname (concat "qbs-" (symbol-name type))))
+      (fset (intern fname)
+	    `(lambda ()
+	       "Quick switch buffer."
+	       (interactive)
+	       (quick-buffer-switch (quote ,type))))
+      (message "Key: %S" key)
+      (when key
+	(define-key quick-buffer-switch-map (read-kbd-macro key) (intern fname))))))
 
-(defvar qbs-files-or-directories-history '()
-  "History list for files or directories switch.")
+(defun qbs-get-buffer-names (predicate)
+  "Return buffers matching PREDICATE.
 
-(defvar qbs-directories-history '()
-  "History list for directories switch.")
-
-(defvar qbs-files-history '()
-  "History list for files switch.")
-
-(defvar qbs-timeout 0.2
-  "Timeout to when checking a path as directory.")
-
-(defconst qbs-dispatcher
-  '((f-o-d . ("" qbs-get-visited-files-or-directories-list qbs-files-or-directories-history))
-    (d . (" (dir)" qbs-get-visited-directories-list  qbs-directories-history))
-    (f . (" (file)" qbs-get-visited-files-list  qbs-files-history)))
-  "Dispatcher for quick-buffer-switch. Format is:
-
-    \( type . \( description function history \)\).
-")
-
-(defun qbs-get-visited-files-or-directories-list()
-  "Return a list of all files or directories visited by a buffer."
+PREDICATE should be a sexp with a BUFFER parameter and return a
+string representation of the buffer which would be used in `completing-read'."
   (loop for buffer in (buffer-list)
-	with bname 
-	do (progn
+	with bstr
+	do (with-timeout
+	       (qbs-timeout
+		(message (format "Timeout for %S" (buffer-name buffer))))
 	     (set-buffer buffer)
-	     (setq bname (if (eq major-mode 'dired-mode)
-			     default-directory
-			   (buffer-file-name))))
-	when bname collect (abbreviate-file-name bname)))
-
-(defun qbs-get-visited-directories-list()
-  "Return a list of all directories visited by a buffer."
-  (loop for buffer in (qbs-get-visited-files-or-directories-list)
-	when (with-timeout (qbs-timeout
-			    (message (format "Timeout for %s" buffer)))
-	       (file-directory-p buffer))
-	collect buffer))
-
-(defun qbs-get-visited-files-list()
-  "Return a list of all files visited by a buffer."
-  (loop for buffer in (qbs-get-visited-files-or-directories-list)
-	unless (with-timeout (qbs-timeout
-			      (message (format "Timeout for %s" buffer)))
-		 (file-directory-p buffer))
-	collect buffer))
-
-(defun quick-buffer-switch (type &optional filename)
-  "Switch to buffer visiting FILENAME or prompt according TYPE:
-file or directory (f-o-d), directory (d) or file (f)."
-  (save-current-buffer
-    (let* ((conf (assoc type qbs-dispatcher))
-	   (desc (cadr conf))
-	   (func (caddr conf))
-	   (hist (cadddr conf))
-	   (filename (or filename
-			 (completing-read
-			  (format "Switch to buffer visiting%s: " desc)
-			  (funcall func)
-			  nil t nil hist nil t))))
-      (when filename
-	(find-file filename)))))
+	     (setq bstr (funcall predicate buffer)))
+	when bstr collect bstr))
 
 ;;;###autoload
-(defun qbs-files-or-directories (&optional filename)
-  "Switch to buffer visiting FILENAME or prompt or a file a
-directory."
+(defun quick-buffer-switch (&optional type)
+  "Quick switch buffer switch according TYPE. Seed `qbs-predicates-alist'."
   (interactive)
-  (quick-buffer-switch 'f-o-d filename))
+  (let* ((type (or type
+		   (intern (completing-read
+			    "Quick buffer switch predicate: "
+			    (loop for p in qbs-predicates-alist
+				  collect (symbol-name (car p)))
+			    nil t nil nil nil t))))
+	 (predicate-def (assoc type qbs-predicates-alist))
+	 (msg (cadr predicate-def))
+	 (predicate (caddr predicate-def))
+	 (value (completing-read
+		 (format "Switch to %s: " msg)
+		 (qbs-get-buffer-names predicate)
+		 nil t nil nil nil t)))
+    (cond
+     ((or (file-exists-p value)
+	  (file-directory-p value))
+      (find-file value))
+     (t
+      (switch-to-buffer value)))))
 
-;;;###autoload
-(defun qbs-directories (&optional filename)
-  "Switch to buffer visiting FILENAME or prompt or a directory."
-  (interactive)
-  (quick-buffer-switch 'd filename))
-
-;;;###autoload
-(defun qbs-files (&optional filename)
-  "Switch to buffer visiting FILENAME or prompt or a file."
-  (interactive)
-  (quick-buffer-switch 'f filename))
-
+(provide 'quick-buffer-switch)
