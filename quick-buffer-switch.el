@@ -164,15 +164,21 @@ string representation of the buffer which would be used in `completing-read'."
 	 (predicate-def (assoc type qbs-predicates-alist))
 	 (msg (cadr predicate-def))
 	 (predicate (caddr predicate-def))
-	 (value (completing-read
-		 (format "Switch to %s: " msg)
-		 (qbs-get-buffer-names predicate)
-		 nil t nil nil nil t)))
-    (cond
-     ((or (file-exists-p value)
-	  (file-directory-p value))
-      (find-file value))
-     (t
-      (switch-to-buffer value)))))
+	 (blist (qbs-get-buffer-names predicate))
+	 value)
+
+
+    (if (not blist)
+	(message (format "No buffer match '%s predicate" type))
+      (setq value (completing-read
+		   (format "Switch to %s: " msg)
+		   blist
+		   nil t nil nil nil t))
+      (cond
+       ((or (file-exists-p value)
+	    (file-directory-p value))
+	(find-file value))
+       (t
+	(switch-to-buffer value))))))
 
 (provide 'quick-buffer-switch)
