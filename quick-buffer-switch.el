@@ -5,7 +5,7 @@
 ;; Author: Sebastien Gross <seb•ɑƬ•chezwam•ɖɵʈ•org>
 ;; Keywords: emacs, configuration
 ;; Created: 2010-07-06
-;; Last changed: 2011-11-23 23:25:07
+;; Last changed: 2011-11-24 17:03:48
 ;; Licence: WTFPL, grab your copy here: http://sam.zoy.org/wtfpl/
 
 ;; This file is NOT part of GNU Emacs.
@@ -37,6 +37,9 @@
   "Prefix key used for `quick-buffer-switch-map'.
 
 Note: By default it shadows `save-buffers-kill-terminal'.")
+
+(defvar qbs-post-init-hook nil
+  "Hook to be run after `qbs-init'.")
 
 (defvar
   qbs-predicates-alist
@@ -160,7 +163,8 @@ to `switch-to-buffer' or a path suitable to `find-file'.")
 	       (quick-buffer-switch (quote ,type))))
       (message "Key: %S" key)
       (when key
-	(define-key quick-buffer-switch-map (read-kbd-macro key) (intern fname))))))
+	(define-key quick-buffer-switch-map (read-kbd-macro key) (intern fname)))))
+  (run-hooks 'qbs-post-init-hook))
 
 (defun qbs-get-buffer-names (predicate)
   "Return buffers matching PREDICATE.
