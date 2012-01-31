@@ -5,7 +5,7 @@
 ;; Author: Sebastien Gross <seb•ɑƬ•chezwam•ɖɵʈ•org>
 ;; Keywords: emacs, configuration
 ;; Created: 2010-07-06
-;; Last changed: 2011-11-24 17:03:48
+;; Last changed: 2012-01-31 15:53:33
 ;; Licence: WTFPL, grab your copy here: http://sam.zoy.org/wtfpl/
 
 ;; This file is NOT part of GNU Emacs.
@@ -51,15 +51,21 @@ Note: By default it shadows `save-buffers-kill-terminal'.")
 		   "C-h")
     (directory "directory"
 	       (lambda (b)
-		 (when (eq major-mode 'dired-mode)
-		   (abbreviate-file-name default-directory)))
+		 (loop for d in dired-subdir-alist
+		       append (list (abbreviate-file-name (car d)))))
 	       "C-d")
-     (file "file"
+     (file-name "file name"
 	   (lambda (b)
 	     (let ((fname (buffer-file-name)))
 	       (when fname
 		 (abbreviate-file-name fname))))
 	   "C-f")
+     (file-buffer "file buffer"
+	   (lambda (b)
+	     (let ((fname (buffer-file-name)))
+	       (when fname
+		 (buffer-name b))))
+	   "f")
      (org-file "org file"
 	       (lambda (b)
 		 (let ((fname (buffer-file-name)))
@@ -70,11 +76,12 @@ Note: By default it shadows `save-buffers-kill-terminal'.")
 	       "C-o")
      (file-or-directory "file or directory"
 			(lambda (b)
-			  (let ((fname (if (eq major-mode 'dired-mode)
-					   default-directory
-					 (buffer-file-name))))
-			    (when fname
-			      (abbreviate-file-name fname))))
+			  (if (eq major-mode 'dired-mode)
+			      (loop for d in dired-subdir-alist
+				    append (list (abbreviate-file-name (car d))))
+			    (let ((fname (buffer-file-name)))
+			      (when fname
+				(abbreviate-file-name fname)))))
 			"C-c")
      (erc-chat "ERC chat"
 	       (lambda (b)
@@ -177,8 +184,9 @@ string representation of the buffer which would be used in `completing-read'."
 	       (qbs-timeout
 		(message (format "Timeout for %S" (buffer-name buffer))))
 	     (set-buffer buffer)
-	     (setq bstr (funcall predicate buffer)))
-	when bstr collect bstr))
+	     (setf bstr (funcall predicate buffer)))
+	when (stringp bstr) collect bstr
+	when (listp bstr) append bstr))
 
 ;;;###autoload
 (defun quick-buffer-switch (&optional type)
