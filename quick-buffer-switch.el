@@ -5,7 +5,7 @@
 ;; Author: Sebastien Gross <seb•ɑƬ•chezwam•ɖɵʈ•org>
 ;; Keywords: emacs, configuration
 ;; Created: 2010-07-06
-;; Last changed: 2012-01-31 15:53:33
+;; Last changed: 2012-02-01 16:52:21
 ;; Licence: WTFPL, grab your copy here: http://sam.zoy.org/wtfpl/
 
 ;; This file is NOT part of GNU Emacs.
@@ -178,15 +178,35 @@ to `switch-to-buffer' or a path suitable to `find-file'.")
 
 PREDICATE should be a sexp with a BUFFER parameter and return a
 string representation of the buffer which would be used in `completing-read'."
-  (loop for buffer in (buffer-list)
-	with bstr
-	do (with-timeout
-	       (qbs-timeout
-		(message (format "Timeout for %S" (buffer-name buffer))))
-	     (set-buffer buffer)
-	     (setf bstr (funcall predicate buffer)))
-	when (stringp bstr) collect bstr
-	when (listp bstr) append bstr))
+  (save-excursion
+    (loop for buffer in (buffer-list)
+	  with bstr
+	  do (with-timeout
+		 (qbs-timeout
+		  (message (format "Timeout for %S" (buffer-name buffer))))
+	       (set-buffer buffer)
+	       (setf bstr (funcall predicate buffer)))
+	  when (stringp bstr) collect bstr
+	  when (listp bstr) append bstr)))
+
+
+;;;###autoload
+(defun qbs-find-buffer-visiting-dir (dir)
+  "Find buffer visiting DIR. Return a maker or nil."
+  (save-excursion
+    (let ((dir (file-name-as-directory (expand-file-name dir))))
+      (loop for buffer in (buffer-list)
+	    with marker
+	  do (with-timeout
+		 (qbs-timeout
+		  (message (format "Timeout for %S" (buffer-name buffer))))
+	       (set-buffer buffer)
+	       (when (eq major-mode 'dired-mode)
+		 (let ((sub (assoc dir dired-subdir-alist)))
+		   (when sub
+		     (setf marker (cdr sub))))))
+	  when marker
+	  return marker))))
 
 ;;;###autoload
 (defun quick-buffer-switch (&optional type)
@@ -212,9 +232,13 @@ string representation of the buffer which would be used in `completing-read'."
 		   blist
 		   nil t nil nil nil t))
       (cond
-       ((or (file-exists-p value)
-	    (file-directory-p value))
-	(find-file value))
+       ((file-directory-p value)
+	(let ((mark (qbs-find-buffer-visiting-dir value)))
+	  (when mark
+	    (switch-to-buffer (marker-buffer mark))
+	    (goto-char (marker-position mark)))))
+       ((file-exists-p value)
+	 (find-file value))
        (t
 	(switch-to-buffer value))))))
 
