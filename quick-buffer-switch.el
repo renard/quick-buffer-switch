@@ -5,7 +5,7 @@
 ;; Author: Sebastien Gross <seb•ɑƬ•chezwam•ɖɵʈ•org>
 ;; Keywords: emacs, configuration
 ;; Created: 2010-07-06
-;; Last changed: 2012-02-01 16:52:21
+;; Last changed: 2012-05-16 00:01:24
 ;; Licence: WTFPL, grab your copy here: http://sam.zoy.org/wtfpl/
 
 ;; This file is NOT part of GNU Emacs.
@@ -137,6 +137,13 @@ Note: By default it shadows `save-buffers-kill-terminal'.")
 			    (not (string= system-name host)))
 		   (abbreviate-file-name fname))))
 	     "C-r")
+     (term "terminal"
+	   (lambda (b)
+		 (when (or
+			(eq major-mode 'shell-mode)
+			(eq major-mode 'term-mode))
+		   (buffer-name b)))
+	   "C-v")
      )
   "List of `quick-buffer-switch' predicate. Each predicate consists of:
 
