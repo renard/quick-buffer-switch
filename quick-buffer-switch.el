@@ -28,7 +28,7 @@
 
 
 (defvar quick-buffer-switch-map nil
-`  "Keymap for quick-buffer-switch commands.")
+  "Keymap for quick-buffer-switch commands.")
 
 (defvar qbs-timeout 0.2
   "Timeout to when checking a path as directory.")
