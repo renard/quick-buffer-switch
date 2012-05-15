@@ -185,16 +185,15 @@ to `switch-to-buffer' or a path suitable to `find-file'.")
 
 PREDICATE should be a sexp with a BUFFER parameter and return a
 string representation of the buffer which would be used in `completing-read'."
-  (save-excursion
-    (loop for buffer in (buffer-list)
-	  with bstr
-	  do (with-timeout
-		 (qbs-timeout
-		  (message (format "Timeout for %S" (buffer-name buffer))))
-	       (set-buffer buffer)
-	       (setf bstr (funcall predicate buffer)))
-	  when (stringp bstr) collect bstr
-	  when (listp bstr) append bstr)))
+  (loop for buffer in (buffer-list)
+	with bstr
+	do (with-timeout
+	       (qbs-timeout
+		(message (format "Timeout for %S" (buffer-name buffer))))
+	     (with-current-buffer buffer
+	       (setf bstr (funcall predicate buffer))))
+	when (stringp bstr) collect bstr
+	when (listp bstr) append bstr))
 
 
 ;;;###autoload
