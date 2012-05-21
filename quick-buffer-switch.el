@@ -195,12 +195,16 @@ to `switch-to-buffer' or a path suitable to `find-file'.")
 		    (format "Quick switch buffer (%s predicate).\n\n%s"
 			    (qbs:predicate-short-description predicate)
 			    (or (qbs:predicate-description predicate)
-				"No description available (see :description slot in `qbs-predicates-alist')."))))
+				"No description available (see :description slot in `qbs-predicates-alist').")))
+		   (key (qbs:predicate-shortcut predicate)))
 	       (fset (intern fname)
 		     `(lambda ()
 			,doctring
 			(interactive)
-			(quick-buffer-switch (quote ,(qbs:predicate-name predicate))))))))
+			(quick-buffer-switch (quote ,(qbs:predicate-name predicate)))))
+	       (when key
+		 (define-key quick-buffer-switch-map
+		   (read-kbd-macro key) (intern fname))))))
 
 ;;;###autoload
 (defun qbs-init ()
