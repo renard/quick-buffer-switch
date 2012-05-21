@@ -41,6 +41,24 @@ Note: By default it shadows `save-buffers-kill-terminal'.")
 (defvar qbs-post-init-hook nil
   "Hook to be run after `qbs-init'.")
 
+(defstruct (qbs:predicate :named)
+  "Quick Buffer Switch predicate structure
+
+ - name: the predicate name (read-only)."
+  (name nil :read-only)
+  short-description
+  description
+  timeout
+  pre-search
+  test
+  post-search
+  shortcut)
+
+(defvar qbs-predicates-alist nil
+  "List containing all predicates.
+
+Do not modify directly, use `qbs-add-predicate' instead.")
+
 (defvar
   qbs-predicates-alist
   '((hidden-buffer "hidden buffer"
