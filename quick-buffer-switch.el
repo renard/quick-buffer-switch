@@ -342,17 +342,14 @@ PREDICATE should be a `qbs:predicate' object."
 			    (loop for p in qbs-predicates-alist
 				  collect (symbol-name (car p)))
 			    nil t nil nil nil t))))
-	 (predicate-def (assoc type qbs-predicates-alist))
-	 (msg (cadr predicate-def))
-	 (predicate (caddr predicate-def))
+	 (predicate (cdr (assoc type qbs-predicates-alist)))
 	 (blist (qbs-get-buffer-names predicate))
 	 value)
 
-
     (if (not blist)
-	(message (format "No buffer match '%s predicate" type))
+	(message (format "No buffer match '%s predicate" (qbs:predicate-name predicate)))
       (setq value (completing-read
-		   (format "Switch to %s: " msg)
+		   (format "Switch to %s: "  (qbs:predicate-short-description predicate))
 		   blist
 		   nil t nil nil nil t))
       (cond
