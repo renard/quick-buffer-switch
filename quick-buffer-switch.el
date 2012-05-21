@@ -57,7 +57,7 @@ Note: By default it shadows `save-buffers-kill-terminal'.")
 (defvar qbs-predicates-alist nil
   "List containing all predicates.
 
-Do not modify directly, use `qbs-add-predicate' instead.")
+Do not modify directly, use `qbs-add-predicates' instead.")
 
 (defvar
   qbs-predicates-alist
@@ -178,6 +178,29 @@ The predicate function should take a buffer object as parameter,
 and return a string which should be either a buffer name suitable
 to `switch-to-buffer' or a path suitable to `find-file'.")
 
+
+(defun qbs-add-predicates (&rest predicates)
+  "Add PREDICATES to `qbs-predicate-alist'."
+  (loop for predicate in predicates
+	do
+	(unless (qbs:predicate-short-description predicate)
+	       (setf (qbs:predicate-short-description predicate)
+		     (save-match-data
+		       (replace-regexp-in-string
+			"-" " " (symbol-name (qbs:predicate-name predicate))))))
+	     (aput 'qbs-predicates-alist (qbs:predicate-name predicate) predicate)
+
+	     (let ((fname (format "qbs-%s-2" (qbs:predicate-name predicate)))
+		   (doctring
+		    (format "Quick switch buffer (%s predicate).\n\n%s"
+			    (qbs:predicate-short-description predicate)
+			    (or (qbs:predicate-description predicate)
+				"No description available (see :description slot in `qbs-predicates-alist')."))))
+	       (fset (intern fname)
+		     `(lambda ()
+			,doctring
+			(interactive)
+			(quick-buffer-switch (quote ,(qbs:predicate-name predicate))))))))
 ;;;###autoload
 (defun qbs-init ()
   "Initialize quick-buffer-switch."
