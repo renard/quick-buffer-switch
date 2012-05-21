@@ -190,7 +190,7 @@ to `switch-to-buffer' or a path suitable to `find-file'.")
 			"-" " " (symbol-name (qbs:predicate-name predicate))))))
 	     (aput 'qbs-predicates-alist (qbs:predicate-name predicate) predicate)
 
-	     (let ((fname (format "qbs-%s-2" (qbs:predicate-name predicate)))
+	     (let ((fname (format "qbs-%s" (qbs:predicate-name predicate)))
 		   (doctring
 		    (format "Quick switch buffer (%s predicate).\n\n%s"
 			    (qbs:predicate-short-description predicate)
