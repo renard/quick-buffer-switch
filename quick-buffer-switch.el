@@ -297,17 +297,21 @@ to `switch-to-buffer' or a path suitable to `find-file'.")
 (defun qbs-get-buffer-names (predicate)
   "Return buffers matching PREDICATE.
 
-PREDICATE should be a sexp with a BUFFER parameter and return a
-string representation of the buffer which would be used in `completing-read'."
-  (loop for buffer in (buffer-list)
-	with bstr
-	do (with-timeout
-	       (qbs-timeout
-		(message (format "Timeout for %S" (buffer-name buffer))))
-	     (with-current-buffer buffer
-	       (setf bstr (funcall predicate buffer))))
-	when (stringp bstr) collect bstr
-	when (listp bstr) append bstr))
+PREDICATE should be a `qbs:predicate' object."
+  (let ((qbs:pre-search (eval (qbs:predicate-pre-search predicate))))
+    (loop for buffer in (buffer-list)
+	  with bstr
+	  do (with-timeout
+		 ((or (qbs:predicate-timeout predicate) qbs-timeout)
+		  (message (format "Timeout for %S" (buffer-name buffer))))
+	       (with-current-buffer buffer
+		 (let* ((qbs:buffer-name (buffer-name))
+			(qbs:buffer-file-name
+			 (when (buffer-file-name)
+			   (abbreviate-file-name (buffer-file-name)))))
+		   (setf bstr (eval (qbs:predicate-test predicate))))))
+	  when (stringp bstr) collect bstr
+	  when (listp bstr) append bstr)))
 
 
 ;;;###autoload
