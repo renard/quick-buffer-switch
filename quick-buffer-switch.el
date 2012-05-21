@@ -201,6 +201,96 @@ to `switch-to-buffer' or a path suitable to `find-file'.")
 			,doctring
 			(interactive)
 			(quick-buffer-switch (quote ,(qbs:predicate-name predicate))))))))
+(defun qbs-init ()
+  ""
+  (qbs-add-predicates
+
+   (make-qbs:predicate
+    :name 'hidden-buffer
+    :description "Show all hidden buffers (starting with a blank character)."
+    :test '(when (string-match "^ " qbs:buffer-name)
+	     qbs:buffer-name))
+
+   (make-qbs:predicate
+    :name 'matching-regexp
+    :pre-search '(read-from-minibuffer "Search for (regexp): ")
+    :test '(save-excursion
+	     (save-restriction
+	       (save-match-data
+		 (goto-char (point-min))
+		 (when
+		     (search-forward-regexp qbs:pre-search nil t)
+		   qbs:buffer-name)))))
+
+   (make-qbs:predicate
+    :name 'directory
+    :test '(when (eq major-mode 'dired-mode)
+	     (loop for d in dired-subdir-alist
+		   append (list (abbreviate-file-name (car d))))))
+
+   (make-qbs:predicate
+    :name 'file-name
+    :test '(let ((fname  (buffer-file-name)))
+	    (when fname
+	      (abbreviate-file-name fname))))
+
+   (make-qbs:predicate
+    :name 'file-buffer
+    :test '(when qbs:buffer-file-name
+	     qbs:buffer-name))
+
+   (make-qbs:predicate
+    :name 'file-or-directory
+    :test '(if (eq major-mode 'dired-mode)
+	       (loop for d in dired-subdir-alist
+		     append (list (abbreviate-file-name (car d))))
+	     (when qbs:buffer-file-name
+	       qbs:buffer-file-name)))
+
+   (make-qbs:predicate
+    :name 'org-mode
+    :test '(when (and qbs:buffer-file-name
+   		      (eq major-mode 'org-mode))
+   	     qbs:buffer-file-name))
+
+   (make-qbs:predicate
+    :name 'erc
+    :test '(when (and
+		  (eq major-mode 'erc-mode)
+		  (not (get-buffer-process qbs:buffer-name)))
+	     qbs:buffer-name))
+
+   (make-qbs:predicate
+    :name 'magit
+    :test '(when (eq major-mode 'magit-mode) qbs:buffer-file-name))
+
+   (make-qbs:predicate
+    :name 'emacs-lisp-mode
+    :test '(when (and qbs:buffer-file-name
+   		      (eq major-mode 'emacs-lisp-mode))
+   	     qbs:buffer-file-name))
+
+   (make-qbs:predicate
+    :name 'help-buffer
+    :test '(when (or
+		  (eq major-mode 'help-mode)
+		  (eq major-mode 'Info-mode))
+	     qbs:buffer-name))
+
+   (make-qbs:predicate
+    :name 'not-file-nor-directory
+    :test '(unless (or
+		    (eq major-mode 'dired-mode)
+		    qbs:buffer-file-name
+		    (string-match "^ " qbs:buffer-name))
+	     qbs:buffer-name))
+
+   (make-qbs:predicate
+    :name 'with-process
+    :test '(when (get-buffer-process qbs:buffer-name)
+	     qbs:buffer-name))
+
+   ))
 ;;;###autoload
 (defun qbs-init ()
   "Initialize quick-buffer-switch."
