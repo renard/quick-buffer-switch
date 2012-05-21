@@ -5,7 +5,7 @@
 ;; Author: Sebastien Gross <seb•ɑƬ•chezwam•ɖɵʈ•org>
 ;; Keywords: emacs, configuration
 ;; Created: 2010-07-06
-;; Last changed: 2012-05-16 00:01:24
+;; Last changed: 2012-05-21 17:46:46
 ;; Licence: WTFPL, grab your copy here: http://sam.zoy.org/wtfpl/
 
 ;; This file is NOT part of GNU Emacs.
@@ -108,12 +108,14 @@ Do not modify directly, use `qbs-add-predicates' instead.")
    (make-qbs:predicate
     :name 'hidden-buffer
     :description "Show all hidden buffers (starting with a blank character)."
+    :shortcut "C-h"
     :test '(when (string-match "^ " qbs:buffer-name)
 	     qbs:buffer-name))
 
    (make-qbs:predicate
     :name 'matching-regexp
     :pre-search '(read-from-minibuffer "Search for (regexp): ")
+    :shortcut "C-/"
     :test '(save-excursion
 	     (save-restriction
 	       (save-match-data
@@ -124,23 +126,27 @@ Do not modify directly, use `qbs-add-predicates' instead.")
 
    (make-qbs:predicate
     :name 'directory
+    :shortcut "C-d"
     :test '(when (eq major-mode 'dired-mode)
 	     (loop for d in dired-subdir-alist
 		   append (list (abbreviate-file-name (car d))))))
 
    (make-qbs:predicate
     :name 'file-name
+    :shortcut "C-f"
     :test '(let ((fname  (buffer-file-name)))
 	    (when fname
 	      (abbreviate-file-name fname))))
 
    (make-qbs:predicate
     :name 'file-buffer
+    :shortcut "f"
     :test '(when qbs:buffer-file-name
 	     qbs:buffer-name))
 
    (make-qbs:predicate
     :name 'file-or-directory
+    :shortcut "C-c"
     :test '(if (eq major-mode 'dired-mode)
 	       (loop for d in dired-subdir-alist
 		     append (list (abbreviate-file-name (car d))))
@@ -149,12 +155,14 @@ Do not modify directly, use `qbs-add-predicates' instead.")
 
    (make-qbs:predicate
     :name 'org-mode
+    :shortcut "C-o"
     :test '(when (and qbs:buffer-file-name
    		      (eq major-mode 'org-mode))
    	     qbs:buffer-file-name))
 
    (make-qbs:predicate
     :name 'erc
+    :shortcut "C-e"
     :test '(when (and
 		  (eq major-mode 'erc-mode)
 		  (not (get-buffer-process qbs:buffer-name)))
@@ -162,16 +170,19 @@ Do not modify directly, use `qbs-add-predicates' instead.")
 
    (make-qbs:predicate
     :name 'magit
+    :shortcut "C-g"
     :test '(when (eq major-mode 'magit-mode) qbs:buffer-file-name))
 
    (make-qbs:predicate
     :name 'emacs-lisp-mode
+    :shortcut "C-l"
     :test '(when (and qbs:buffer-file-name
    		      (eq major-mode 'emacs-lisp-mode))
    	     qbs:buffer-file-name))
 
    (make-qbs:predicate
     :name 'help-buffer
+        :shortcut "C-i"
     :test '(when (or
 		  (eq major-mode 'help-mode)
 		  (eq major-mode 'Info-mode))
@@ -179,6 +190,7 @@ Do not modify directly, use `qbs-add-predicates' instead.")
 
    (make-qbs:predicate
     :name 'not-file-nor-directory
+    :shortcut "C-b"
     :test '(unless (or
 		    (eq major-mode 'dired-mode)
 		    qbs:buffer-file-name
@@ -187,8 +199,30 @@ Do not modify directly, use `qbs-add-predicates' instead.")
 
    (make-qbs:predicate
     :name 'with-process
+    :shortcut "C-p"
     :test '(when (get-buffer-process qbs:buffer-name)
 	     qbs:buffer-name))
+
+   (make-qbs:predicate
+    :name 'terminal
+    :shortcut "C-v"
+    :test '(when (or (eq major-mode 'shell-mode)
+		     (eq major-mode 'term-mode)
+		     qbs:buffer-name)))
+
+   (make-qbs:predicate
+    :name 'remote
+    :shortcut "C-r"
+    :test '(let* ((fname (or buffer-file-name
+			     dired-directory))
+		  (file-vec (or (ignore-errors (tramp-dissect-file-name
+						fname))
+				(tramp-dissect-file-name
+				 (concat "/:" fname) 1)))
+		  (host  (tramp-file-name-host file-vec)))
+	     (when (and host
+			(not (string= system-name host)))
+	       (abbreviate-file-name fname))))
 
    ))
 
