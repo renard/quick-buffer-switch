@@ -44,7 +44,21 @@ Note: By default it shadows `save-buffers-kill-terminal'.")
 (defstruct (qbs:predicate :named)
   "Quick Buffer Switch predicate structure
 
- - name: the predicate name (read-only)."
+ - name: the predicate name (read-only).
+ - short-description: used when prompting.
+ - description: long description used as function docstring.
+ - timeout: override `qbs-timeout'.
+ - pre-search: function called before running test on all buffers.
+ - test: predicate test function.
+ - post-search: function called after test run on all buffers.
+ - shortcut: key binding used within `quick-buffer-switch-map'
+   which prefix is C-x C-c.
+
+Note that C-x C-c (`save-buffers-kill-terminal') is then shadowed.
+
+The predicate function should take a buffer object as parameter,
+and return a string which should be either a buffer name suitable
+to `switch-to-buffer' or a path suitable to `find-file'."
   (name nil :read-only)
   short-description
   description
