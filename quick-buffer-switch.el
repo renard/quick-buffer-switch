@@ -5,7 +5,7 @@
 ;; Author: Sebastien Gross <seb•ɑƬ•chezwam•ɖɵʈ•org>
 ;; Keywords: emacs, configuration
 ;; Created: 2010-07-06
-;; Last changed: 2012-05-21 17:46:46
+;; Last changed: 2012-05-21 18:03:55
 ;; Licence: WTFPL, grab your copy here: http://sam.zoy.org/wtfpl/
 
 ;; This file is NOT part of GNU Emacs.
@@ -116,6 +116,7 @@ Do not modify directly, use `qbs-add-predicates' instead.")
     :name 'matching-regexp
     :pre-search '(read-from-minibuffer "Search for (regexp): ")
     :shortcut "C-/"
+    :post-search '(occur qbs:pre-search)
     :test '(save-excursion
 	     (save-restriction
 	       (save-match-data
@@ -230,20 +231,19 @@ Do not modify directly, use `qbs-add-predicates' instead.")
   "Return buffers matching PREDICATE.
 
 PREDICATE should be a `qbs:predicate' object."
-  (let ((qbs:pre-search (eval (qbs:predicate-pre-search predicate))))
-    (loop for buffer in (buffer-list)
-	  with bstr
-	  do (with-timeout
-		 ((or (qbs:predicate-timeout predicate) qbs-timeout)
-		  (message (format "Timeout for %S" (buffer-name buffer))))
-	       (with-current-buffer buffer
-		 (let* ((qbs:buffer-name (buffer-name))
-			(qbs:buffer-file-name
-			 (when (buffer-file-name)
-			   (abbreviate-file-name (buffer-file-name)))))
-		   (setf bstr (eval (qbs:predicate-test predicate))))))
-	  when (stringp bstr) collect bstr
-	  when (listp bstr) append bstr)))
+  (loop for buffer in (buffer-list)
+	with bstr
+	do (with-timeout
+	       ((or (qbs:predicate-timeout predicate) qbs-timeout)
+		(message (format "Timeout for %S" (buffer-name buffer))))
+	     (with-current-buffer buffer
+	       (let* ((qbs:buffer-name (buffer-name))
+		      (qbs:buffer-file-name
+		       (when (buffer-file-name)
+			 (abbreviate-file-name (buffer-file-name)))))
+		 (setf bstr (eval (qbs:predicate-test predicate))))))
+	when (stringp bstr) collect bstr
+	when (listp bstr) append bstr))
 
 
 ;;;###autoload
@@ -275,6 +275,7 @@ PREDICATE should be a `qbs:predicate' object."
 				  collect (symbol-name (car p)))
 			    nil t nil nil nil t))))
 	 (predicate (cdr (assoc type qbs-predicates-alist)))
+	 (qbs:pre-search (eval (qbs:predicate-pre-search predicate)))
 	 (blist (qbs-get-buffer-names predicate))
 	 value)
 
@@ -293,6 +294,7 @@ PREDICATE should be a `qbs:predicate' object."
        ((file-exists-p value)
 	 (find-file value))
        (t
-	(switch-to-buffer value))))))
+	(switch-to-buffer value)))
+      (eval (qbs:predicate-post-search predicate)))))
 
 (provide 'quick-buffer-switch)
