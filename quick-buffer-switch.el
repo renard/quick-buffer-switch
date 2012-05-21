@@ -201,8 +201,10 @@ to `switch-to-buffer' or a path suitable to `find-file'.")
 			,doctring
 			(interactive)
 			(quick-buffer-switch (quote ,(qbs:predicate-name predicate))))))))
+
+;;;###autoload
 (defun qbs-init ()
-  ""
+  "Initialize quick-buffer-switch."
   (qbs-add-predicates
 
    (make-qbs:predicate
@@ -291,25 +293,6 @@ to `switch-to-buffer' or a path suitable to `find-file'.")
 	     qbs:buffer-name))
 
    ))
-;;;###autoload
-(defun qbs-init ()
-  "Initialize quick-buffer-switch."
-  (define-prefix-command 'quick-buffer-switch-map)
-  (global-set-key (read-kbd-macro qbs-prefix-key) 'quick-buffer-switch-map)
-  (define-key quick-buffer-switch-map (kbd "?") 'quick-buffer-switch)
-  (dolist (type  (mapcar 'car qbs-predicates-alist))
-    (let* ((predicate-def (assoc type qbs-predicates-alist))
-	   (key (cadddr predicate-def))
-	   (fname (concat "qbs-" (symbol-name type))))
-      (fset (intern fname)
-	    `(lambda ()
-	       "Quick switch buffer."
-	       (interactive)
-	       (quick-buffer-switch (quote ,type))))
-      (message "Key: %S" key)
-      (when key
-	(define-key quick-buffer-switch-map (read-kbd-macro key) (intern fname)))))
-  (run-hooks 'qbs-post-init-hook))
 
 (defun qbs-get-buffer-names (predicate)
   "Return buffers matching PREDICATE.
