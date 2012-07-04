@@ -1,9 +1,10 @@
-;; quick-buffer-switch.el --- Quick switch to file or dir buffers.
+;;; quick-buffer-switch.el --- Quick switch to file or dir buffers.
 
 ;; Copyright © 2011 Sebastien Gross <seb•ɑƬ•chezwam•ɖɵʈ•org>
 
 ;; Author: Sebastien Gross <seb•ɑƬ•chezwam•ɖɵʈ•org>
 ;; Keywords: emacs, configuration
+;; Version: 0.1
 ;; Created: 2010-07-06
 ;; Last changed: 2012-05-21 18:03:55
 ;; Licence: WTFPL, grab your copy here: http://sam.zoy.org/wtfpl/
@@ -22,10 +23,10 @@
 ;;
 ;; Note that C-x C-c (`save-buffers-kill-terminal') is shadowed.
 
+;;; Code:
 
 (eval-when-compile (require 'cl))
 (eval-when-compile (require 'files))
-
 
 (defvar quick-buffer-switch-map nil
   "Keymap for quick-buffer-switch commands.")
@@ -298,3 +299,5 @@ PREDICATE should be a `qbs:predicate' object."
       (eval (qbs:predicate-post-search predicate)))))
 
 (provide 'quick-buffer-switch)
+
+;;; quick-buffer-switch.el ends here
