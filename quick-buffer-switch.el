@@ -6,7 +6,7 @@
 ;; Keywords: emacs, configuration
 ;; Version: 0.1
 ;; Created: 2010-07-06
-;; Last changed: 2012-05-21 18:03:55
+;; Last changed: 2012-07-04 22:05:45
 ;; Licence: WTFPL, grab your copy here: http://sam.zoy.org/wtfpl/
 
 ;; This file is NOT part of GNU Emacs.
@@ -104,6 +104,10 @@ Do not modify directly, use `qbs-add-predicates' instead.")
 ;;;###autoload
 (defun qbs-init ()
   "Initialize quick-buffer-switch."
+  (define-prefix-command 'quick-buffer-switch-map)
+  (global-set-key (read-kbd-macro qbs-prefix-key) 'quick-buffer-switch-map)
+  (define-key quick-buffer-switch-map (kbd "?") 'quick-buffer-switch)
+
   (qbs-add-predicates
 
    (make-qbs:predicate
