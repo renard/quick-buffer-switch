@@ -6,7 +6,7 @@
 ;; Keywords: emacs, configuration
 ;; Version: 0.1
 ;; Created: 2010-07-06
-;; Last changed: 2012-07-04 22:05:45
+;; Last changed: 2012-08-27 20:06:56
 ;; Licence: WTFPL, grab your copy here: http://sam.zoy.org/wtfpl/
 
 ;; This file is NOT part of GNU Emacs.
@@ -213,8 +213,8 @@ Do not modify directly, use `qbs-add-predicates' instead.")
     :name 'terminal
     :shortcut "C-v"
     :test '(when (or (eq major-mode 'shell-mode)
-		     (eq major-mode 'term-mode)
-		     qbs:buffer-name)))
+		     (eq major-mode 'term-mode))
+		     qbs:buffer-name))
 
    (make-qbs:predicate
     :name 'remote
