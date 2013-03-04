@@ -69,8 +69,8 @@ to `switch-to-buffer' or a path suitable to `find-file'."
   post-search
   shortcut)
 
-(defvar qbs-predicates-alist nil
-  "List containing all predicates.
+(defvar qbs-predicates-plist nil
+  "PLIST containing all predicates.
 
 Do not modify directly, use `qbs-add-predicates' instead.")
 
@@ -83,14 +83,16 @@ Do not modify directly, use `qbs-add-predicates' instead.")
 		     (save-match-data
 		       (replace-regexp-in-string
 			"-" " " (symbol-name (qbs:predicate-name predicate))))))
-	     (aput 'qbs-predicates-alist (qbs:predicate-name predicate) predicate)
+	(setq qbs-predicates-plist
+	      (plist-put qbs-predicates-plist
+			 (qbs:predicate-name predicate) predicate))
 
 	     (let ((fname (format "qbs-%s" (qbs:predicate-name predicate)))
 		   (doctring
 		    (format "Quick switch buffer (%s predicate).\n\n%s"
 			    (qbs:predicate-short-description predicate)
 			    (or (qbs:predicate-description predicate)
-				"No description available (see :description slot in `qbs-predicates-alist').")))
+				"No description available (see :description slot in `qbs-predicates-plist').")))
 		   (key (qbs:predicate-shortcut predicate)))
 	       (fset (intern fname)
 		     `(lambda ()
@@ -271,15 +273,15 @@ PREDICATE should be a `qbs:predicate' object."
 
 ;;;###autoload
 (defun quick-buffer-switch (&optional type)
-  "Quick switch buffer switch according TYPE. Seed `qbs-predicates-alist'."
+  "Quick switch buffer switch according TYPE. Seed `qbs-predicates-plist'."
   (interactive)
   (let* ((type (or type
 		   (intern (completing-read
 			    "Quick buffer switch predicate: "
-			    (loop for p in qbs-predicates-alist
-				  collect (symbol-name (car p)))
+			    (loop for (k v) on qbs-predicates-plist by #'cddr
+				  collect (symbol-name k))
 			    nil t nil nil nil t))))
-	 (predicate (cdr (assoc type qbs-predicates-alist)))
+	 (predicate (plist-get qbs-predicates-plist type))
 	 (qbs:pre-search (eval (qbs:predicate-pre-search predicate)))
 	 (blist (qbs-get-buffer-names predicate))
 	 value)
