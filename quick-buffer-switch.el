@@ -79,29 +79,29 @@ Do not modify directly, use `qbs-add-predicates' instead.")
   (loop for predicate in predicates
 	do
 	(unless (qbs:predicate-short-description predicate)
-	       (setf (qbs:predicate-short-description predicate)
-		     (save-match-data
-		       (replace-regexp-in-string
-			"-" " " (symbol-name (qbs:predicate-name predicate))))))
+	  (setf (qbs:predicate-short-description predicate)
+		(save-match-data
+		  (replace-regexp-in-string
+		   "-" " " (symbol-name (qbs:predicate-name predicate))))))
 	(setq qbs-predicates-plist
 	      (plist-put qbs-predicates-plist
 			 (qbs:predicate-name predicate) predicate))
 
-	     (let ((fname (format "qbs-%s" (qbs:predicate-name predicate)))
-		   (doctring
-		    (format "Quick switch buffer (%s predicate).\n\n%s"
-			    (qbs:predicate-short-description predicate)
-			    (or (qbs:predicate-description predicate)
-				"No description available (see :description slot in `qbs-predicates-plist').")))
-		   (key (qbs:predicate-shortcut predicate)))
-	       (fset (intern fname)
-		     `(lambda ()
-			,doctring
-			(interactive)
-			(quick-buffer-switch (quote ,(qbs:predicate-name predicate)))))
-	       (when key
-		 (define-key quick-buffer-switch-map
-		   (read-kbd-macro key) (intern fname))))))
+	(let ((fname (format "qbs-%s" (qbs:predicate-name predicate)))
+	      (doctring
+	       (format "Quick switch buffer (%s predicate).\n\n%s"
+		       (qbs:predicate-short-description predicate)
+		       (or (qbs:predicate-description predicate)
+			   "No description available (see :description slot in `qbs-predicates-plist').")))
+	      (key (qbs:predicate-shortcut predicate)))
+	  (fset (intern fname)
+		`(lambda ()
+		   ,doctring
+		   (interactive)
+		   (quick-buffer-switch (quote ,(qbs:predicate-name predicate)))))
+	  (when key
+	    (define-key quick-buffer-switch-map
+	      (read-kbd-macro key) (intern fname))))))
 
 ;;;###autoload
 (defun qbs-init ()
@@ -190,7 +190,7 @@ Do not modify directly, use `qbs-add-predicates' instead.")
 
    (make-qbs:predicate
     :name 'help-buffer
-        :shortcut "C-i"
+    :shortcut "C-i"
     :test '(when (or
 		  (eq major-mode 'help-mode)
 		  (eq major-mode 'Info-mode))
@@ -216,7 +216,7 @@ Do not modify directly, use `qbs-add-predicates' instead.")
     :shortcut "C-v"
     :test '(when (or (eq major-mode 'shell-mode)
 		     (eq major-mode 'term-mode))
-		     qbs:buffer-name))
+	     qbs:buffer-name))
 
    (make-qbs:predicate
     :name 'remote
@@ -299,7 +299,7 @@ PREDICATE should be a `qbs:predicate' object."
 	    (switch-to-buffer (marker-buffer mark))
 	    (goto-char (marker-position mark)))))
        ((file-exists-p value)
-	 (find-file value))
+	(find-file value))
        (t
 	(switch-to-buffer value)))
       (eval (qbs:predicate-post-search predicate)))))
