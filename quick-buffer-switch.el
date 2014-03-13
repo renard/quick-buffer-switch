@@ -6,7 +6,7 @@
 ;; Keywords: emacs, configuration
 ;; Version: 0.1
 ;; Created: 2010-07-06
-;; Last changed: 2012-08-27 20:06:56
+;; Last changed: 2014-03-13 11:38:13
 ;; Licence: WTFPL, grab your copy here: http://sam.zoy.org/wtfpl/
 
 ;; This file is NOT part of GNU Emacs.
@@ -179,7 +179,12 @@ Do not modify directly, use `qbs-add-predicates' instead.")
    (make-qbs:predicate
     :name 'magit
     :shortcut "C-g"
-    :test '(when (eq major-mode 'magit-mode) qbs:buffer-file-name))
+    :test '(when (member major-mode
+			 '(magit-branch-manager-mode
+			   magit-commit-mode
+			   magit-process-mode
+			   magit-status-mode))
+	     qbs:buffer-name))
 
    (make-qbs:predicate
     :name 'emacs-lisp-mode
