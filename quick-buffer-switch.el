@@ -105,7 +105,7 @@ Do not modify directly, use `qbs-add-predicates' instead.")
 
 ;;;###autoload
 (defun qbs-init ()
-  "Initialize quick-buffer-switch."
+  "Initialize quick-buffer-switch into `qbs-predicates-plist'."
   (define-prefix-command 'quick-buffer-switch-map)
   (global-set-key (read-kbd-macro qbs-prefix-key) 'quick-buffer-switch-map)
   (define-key quick-buffer-switch-map (kbd "?") 'quick-buffer-switch)
