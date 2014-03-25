@@ -6,7 +6,7 @@
 ;; Keywords: emacs, configuration
 ;; Version: 0.1
 ;; Created: 2010-07-06
-;; Last changed: 2014-03-13 11:38:13
+;; Last changed: 2014-03-25 03:35:26
 ;; Licence: WTFPL, grab your copy here: http://sam.zoy.org/wtfpl/
 
 ;; This file is NOT part of GNU Emacs.
@@ -293,10 +293,13 @@ PREDICATE should be a `qbs:predicate' object."
 
     (if (not blist)
 	(message (format "No buffer match '%s predicate" (qbs:predicate-name predicate)))
-      (setq value (completing-read
-		   (format "Switch to %s: "  (qbs:predicate-short-description predicate))
-		   blist
-		   nil t nil nil nil t))
+      (setq value
+	    (if (= 1 (length blist))
+		(car blist)
+	      (completing-read
+	       (format "Switch to %s: "  (qbs:predicate-short-description predicate))
+	       blist
+	       nil t nil nil nil t)))
       (cond
        ((file-directory-p value)
 	(let ((mark (qbs-find-buffer-visiting-dir value)))
