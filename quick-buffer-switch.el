@@ -6,7 +6,7 @@
 ;; Keywords: emacs, configuration
 ;; Version: 0.1
 ;; Created: 2010-07-06
-;; Last changed: 2014-03-25 03:35:26
+;; Last changed: 2014-11-12 10:57:53
 ;; Licence: WTFPL, grab your copy here: http://sam.zoy.org/wtfpl/
 
 ;; This file is NOT part of GNU Emacs.
@@ -152,6 +152,12 @@ Do not modify directly, use `qbs-add-predicates' instead.")
     :test '(when (eq major-mode 'dired-mode)
 	     (loop for d in dired-subdir-alist
 		   append (list (abbreviate-file-name (car d))))))
+
+   (make-qbs:predicate
+    :name 'directory
+    :shortcut "d"
+    :test '(when (eq major-mode 'dired-mode)
+	     qbs:buffer-name))
 
    (make-qbs:predicate
     :name 'file-name
