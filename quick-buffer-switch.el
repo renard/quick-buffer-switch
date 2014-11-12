@@ -69,6 +69,20 @@ to `switch-to-buffer' or a path suitable to `find-file'."
   post-search
   shortcut)
 
+
+(defvar qbs:buffer-name nil
+  "Placeholder filled with the current buffer name by the
+`qbs-get-buffer-names' function during predicate match.")
+
+(defvar qbs:buffer-file-name nil
+  "Placeholder filled with the current buffer file name (or NIL
+if buffer has no file) by the `qbs-get-buffer-names' function
+during predicate match.")
+
+(defvar qbs:pre-search nil
+  "Placeholder filled with the result of pre-search
+function (from `qbs:predicate' slot) in `quick-buffer-switch'.")
+
 (defvar qbs-predicates-plist nil
   "PLIST containing all predicates.
 
