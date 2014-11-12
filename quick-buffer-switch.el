@@ -6,7 +6,7 @@
 ;; Keywords: emacs, configuration
 ;; Version: 0.1
 ;; Created: 2010-07-06
-;; Last changed: 2014-11-12 11:43:20
+;; Last changed: 2014-11-12 11:50:15
 ;; Licence: WTFPL, grab your copy here: http://sam.zoy.org/wtfpl/
 
 ;; This file is NOT part of GNU Emacs.
@@ -215,6 +215,17 @@ Do not modify directly, use `qbs-add-predicates' instead.")
 			   magit-status-mode))
 	     qbs:buffer-name))
 
+   (make-qbs:predicate
+    :name 'vcsh
+    :shortcut "C-v"
+    :test '(let* ((file-vec (or (ignore-errors
+				  (tramp-dissect-file-name qbs:buffer-file-name))
+				(tramp-dissect-file-name
+				 (concat "/:" qbs:buffer-file-name) 1)))
+		  (method (tramp-file-name-method file-vec)))
+	     (when (string= "vcsh" method)
+	       qbs:buffer-name)))
+   
    (make-qbs:predicate
     :name 'emacs-lisp-mode
     :shortcut "C-l"
