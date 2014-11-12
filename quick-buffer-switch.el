@@ -6,7 +6,7 @@
 ;; Keywords: emacs, configuration
 ;; Version: 0.1
 ;; Created: 2010-07-06
-;; Last changed: 2014-11-12 10:57:53
+;; Last changed: 2014-11-12 11:43:20
 ;; Licence: WTFPL, grab your copy here: http://sam.zoy.org/wtfpl/
 
 ;; This file is NOT part of GNU Emacs.
@@ -97,6 +97,15 @@ Do not modify directly, use `qbs-add-predicates' instead.")
 		(save-match-data
 		  (replace-regexp-in-string
 		   "-" " " (symbol-name (qbs:predicate-name predicate))))))
+	;; If we replace an existing predicate, we may need to unbind
+	;; previous key binding first to allow user to change the predicate
+	;; key binding.
+	(let ((existing (plist-get qbs-predicates-plist
+				   (qbs:predicate-name predicate))))
+	  (when existing
+	    (define-key quick-buffer-switch-map
+	      (read-kbd-macro (qbs:predicate-shortcut existing)) nil)))
+	
 	(setq qbs-predicates-plist
 	      (plist-put qbs-predicates-plist
 			 (qbs:predicate-name predicate) predicate))
