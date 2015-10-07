@@ -264,6 +264,13 @@ Do not modify directly, use `qbs-add-predicates' instead.")
 	     qbs:buffer-name))
 
    (make-qbs:predicate
+	:name 'modified
+	:shortcut "RET"
+	:test '(and qbs:buffer-file-name
+		    (buffer-modified-p)
+		    qbs:buffer-file-name))
+   
+   (make-qbs:predicate
     :name 'remote
     :shortcut "C-r"
     :test '(let* ((fname (or buffer-file-name
