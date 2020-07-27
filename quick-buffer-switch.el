@@ -6,7 +6,7 @@
 ;; Keywords: emacs, configuration
 ;; Version: 0.1
 ;; Created: 2010-07-06
-;; Last changed: 2020-07-24 17:27:42
+;; Last changed: 2020-07-27 09:19:20
 ;; Licence: WTFPL, grab your copy here: http://sam.zoy.org/wtfpl/
 
 ;; This file is NOT part of GNU Emacs.
@@ -275,15 +275,12 @@ Do not modify directly, use `qbs-add-predicates' instead.")
     :shortcut "C-r"
     :test '(let* ((fname (or buffer-file-name
 			     dired-directory))
-		  (file-vec (or (ignore-errors (tramp-dissect-file-name
-						fname))
-				nil))
+		  (file-vec (when (tramp-tramp-file-p fname)
+			      (tramp-dissect-file-name fname)))
 		  (host  (and file-vec (tramp-file-name-host file-vec))))
 	     (when (and host
 			(not (string= system-name host)))
-	       (abbreviate-file-name fname))))
-
-   ))
+	       (abbreviate-file-name fname))))))
 
 (defun qbs-get-buffer-names (predicate)
   "Return buffers matching PREDICATE.
