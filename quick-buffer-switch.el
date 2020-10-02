@@ -6,7 +6,7 @@
 ;; Keywords: emacs, configuration
 ;; Version: 0.1
 ;; Created: 2010-07-06
-;; Last changed: 2020-07-27 09:19:20
+;; Last changed: 2020-10-02 17:02:42
 ;; Licence: WTFPL, grab your copy here: http://sam.zoy.org/wtfpl/
 
 ;; This file is NOT part of GNU Emacs.
@@ -218,8 +218,9 @@ Do not modify directly, use `qbs-add-predicates' instead.")
    (make-qbs:predicate
     :name 'vcsh
     :shortcut "C-v"
-    :test '(let* ((file-vec (or (ignore-errors
-				  (tramp-dissect-file-name qbs:buffer-file-name))
+    :test '(let* ((file-vec (or (condition-case nil
+				    (tramp-dissect-file-name fname)
+				  (t nil))
 				(tramp-dissect-file-name
 				 (concat "/:" qbs:buffer-file-name) 1)))
 		  (method (tramp-file-name-method file-vec)))
@@ -275,8 +276,9 @@ Do not modify directly, use `qbs-add-predicates' instead.")
     :shortcut "C-r"
     :test '(let* ((fname (or buffer-file-name
 			     dired-directory))
-		  (file-vec (when (tramp-tramp-file-p fname)
-			      (tramp-dissect-file-name fname)))
+		  (file-vec (condition-case nil
+				(tramp-dissect-file-name fname)
+			      (t nil)))
 		  (host  (and file-vec (tramp-file-name-host file-vec))))
 	     (when (and host
 			(not (string= system-name host)))
