@@ -6,7 +6,7 @@
 ;; Keywords: emacs, configuration
 ;; Version: 0.1
 ;; Created: 2010-07-06
-;; Last changed: 2014-11-12 11:50:15
+;; Last changed: 2020-10-28 00:03:50
 ;; Licence: WTFPL, grab your copy here: http://sam.zoy.org/wtfpl/
 
 ;; This file is NOT part of GNU Emacs.
@@ -274,15 +274,14 @@ Do not modify directly, use `qbs-add-predicates' instead.")
     :name 'remote
     :shortcut "C-r"
     :test '(let* ((fname (or buffer-file-name
-			     dired-directory))
-		  (file-vec (or (ignore-errors (tramp-dissect-file-name
-						fname))
-				(tramp-dissect-file-name
-				 (concat "/:" fname) 1)))
-		  (host  (tramp-file-name-host file-vec)))
-	     (when (and host
-			(not (string= system-name host)))
-	       (abbreviate-file-name fname))))
+			     dired-directory)))
+	     (when (tramp-tramp-file-p fname)
+	       (with-parsed-tramp-file-name fname tfn
+		 (when (and (string= tfn-method "ssh")
+			    (not (string=
+				  system-name
+				  (substring-no-properties tfn-host))))
+		   (substring-no-properties (abbreviate-file-name fname)))))))
 
    ))
 
