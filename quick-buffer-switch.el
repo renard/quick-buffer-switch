@@ -6,7 +6,7 @@
 ;; Keywords: emacs, configuration
 ;; Version: 0.1
 ;; Created: 2010-07-06
-;; Last changed: 2020-10-02 17:02:42
+;; Last changed: 2021-04-26 09:33:06
 ;; Licence: WTFPL, grab your copy here: http://sam.zoy.org/wtfpl/
 
 ;; This file is NOT part of GNU Emacs.
@@ -220,9 +220,9 @@ Do not modify directly, use `qbs-add-predicates' instead.")
     :shortcut "C-v"
     :test '(let* ((file-vec (or (condition-case nil
 				    (tramp-dissect-file-name fname)
-				  (t nil))
-				(tramp-dissect-file-name
-				 (concat "/:" qbs:buffer-file-name) 1)))
+				    (t nil))
+				    (ignore-errors (tramp-dissect-file-name
+				     (concat "/:" qbs:buffer-file-name) 1))))
 		  (method (tramp-file-name-method file-vec)))
 	     (when (string= "vcsh" method)
 	       qbs:buffer-name)))
