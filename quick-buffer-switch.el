@@ -6,7 +6,7 @@
 ;; Keywords: emacs, configuration
 ;; Version: 0.1
 ;; Created: 2010-07-06
-;; Last changed: 2021-04-26 09:33:06
+;; Last changed: 2022-12-20 12:40:52
 ;; Licence: WTFPL, grab your copy here: http://sam.zoy.org/wtfpl/
 
 ;; This file is NOT part of GNU Emacs.
@@ -270,19 +270,23 @@ Do not modify directly, use `qbs-add-predicates' instead.")
 	:test '(and qbs:buffer-file-name
 		    (buffer-modified-p)
 		    qbs:buffer-file-name))
-   
+
    (make-qbs:predicate
     :name 'remote
     :shortcut "C-r"
     :test '(let* ((fname (or buffer-file-name
-			     dired-directory))
-		  (file-vec (condition-case nil
-				(tramp-dissect-file-name fname)
-			      (t nil)))
-		  (host  (and file-vec (tramp-file-name-host file-vec))))
-	     (when (and host
-			(not (string= system-name host)))
-	       (abbreviate-file-name fname))))))
+			        dired-directory)))
+             (with-current-buffer qbs:buffer-name
+               ;; if a filename is not a tramp file name, an error is fired.
+               ;; We need to ignore it to prevent from aborting predicate
+               (ignore-errors
+	          (with-parsed-tramp-file-name fname tfn
+		     (when (and (string= tfn-method "ssh")
+			         (not (string=
+				        system-name
+				        (substring-no-properties tfn-host))))
+		       (substring-no-properties
+                      (abbreviate-file-name fname))))))))))
 
 (defun qbs-get-buffer-names (predicate)
   "Return buffers matching PREDICATE.
